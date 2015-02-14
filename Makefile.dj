@@ -1,0 +1,115 @@
+# SRZIP Makefile (c)1998,1999,2000 Stepan Roh
+
+# Replace this if you are using PGCC!
+# PGCC = 1
+
+# Useful definitions (change this if you are using other programs)
+# - compiler
+CC = gcc
+# - archiver (librarian)
+AR = ar
+# - remove files utility (don't stop when files don't exist!)
+RM = rm -f
+# - copy utility
+CP = cp
+# - echo utility
+ECHO = @echo
+
+# Linker flags
+LFLAGS =
+# Warning flags
+WFLAGS = -Wall -Wno-unused -Werror
+
+# Optimisation flags
+ifdef DEBUGMODE
+OFLAGS = -g
+else
+ifdef PGCC
+OFLAGS = -mpentium -O6
+else
+OFLAGS = -m486 -O3
+endif
+LFLAGS = -s
+CFLAGS += -DSRZIP_DEBUG
+endif
+
+# Compiler flags
+CFLAGS = $(OFLAGS) $(WFLAGS)
+
+# Libraries to link with
+LIBS =
+
+# SRZIP objects
+SRZIP_OBJS = srzip.o\
+config.o\
+bitfile.o\
+parseopt.o\
+crc.o\
+m_cpy.o\
+m_rle.o\
+m_shc.o\
+m_ahc.o\
+m_bwt.o
+
+# SRZIP headers
+SRZIP_HEADERS = global.h\
+config.h\
+bitfile.h\
+parseopt.h\
+crc.h\
+m_cpy.h\
+m_rle.h\
+m_shc.h\
+m_ahc.h\
+m_bwt.h
+
+# SRZIP generated files
+SRZIP_GENFILES = global.h\
+config.h
+
+# SRZIP executable name
+SRZIP_NAME = srzip.exe
+
+.PHONY : all exe msg_begin msg_end clean cleanall distclean
+
+# Main target
+all : msg_begin exe msg_end
+
+# Make executable
+exe : $(SRZIP_HEADERS) $(SRZIP_OBJS) $(SRZIP_NAME)
+
+$(SRZIP_NAME) : $(SRZIP_HEADERS) $(SRZIP_OBJS)
+	$(CC) $(LFLAGS) -o $@ $(SRZIP_OBJS) $(LIBS)
+
+# Messages
+msg_begin :
+	$(ECHO) "Compiling srzip. Please wait..."
+
+msg_end :
+	$(ECHO) "All done."
+
+# Clean
+clean :
+	$(RM) $(SRZIP_OBJS)
+
+# Clean all
+cleanall : clean
+	$(RM) $(SRZIP_NAME)
+
+# Distribution cleaning
+distclean : cleanall
+	$(RM) $(SRZIP_GENFILES)
+
+# Make object files from C files
+%.o : %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+# DJGPP specific
+config.h : config.dj
+	$(ECHO) "Creating $@"
+	$(CP) $< $@
+
+# DJGPP specific
+global.h : global.dj
+	$(ECHO) "Creating $@"
+	$(CP) $< $@

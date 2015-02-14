@@ -1,0 +1,92 @@
+C---- tech-notes.cs.aft (c)2000 Stepan Roh - iso-8859-2 encoding
+*Title: srzip 0.3 - Poznámky k implementaci
+*Author: ©tìpán Roh
+
+                        Verze 0.3
+                        Revize dokumentu 1.1 (15.1.2005)
+
+* Metoda bwt
+
+Ve¹kerý kód k metodì bwt je obsa¾en v souborech m__bwt.\[hc] (navíc je
+vyu¾íván kód metody ahc ze souborù m__ahc.\[hc]). Pro obecné seznámení s
+principy bwt doporuèuji \[[1]].
+
+** Jednotlivá stádia komprese
+
+Ve¹kerá komprese se provádí po blocích jejich¾ velikost je pøímo úmìrná
+kvalitì komprese. Burrows-Wheelerova transformace (viz \[[2]]) je
+implementována fcí do__bwt(in__buf, out__buf, len, idx__buf), která provede
+transformaci vstupního bufferu in__buf (o délce len) na výstupní buffer
+out__buf. Oproti nejzákladnìj¹í implementaci transformace jsou tyto
+vylep¹ení : kruhový buffer není nový buffer, ale pole ukazatelù do vstupního
+bufferu (idx__buf), k urychlení tøídìní (které se provádí pomocí
+standardního qsort()) se na konec vstupního bufferu pøimyslí tzv. eof znak,
+který má vìt¹í hodnotu ne¾ kterýkoliv jiný znak, tím pádem není tøeba
+porovnávat kruhové øetìzce, ale pouze suffixy vstupu. Jen je tøeba
+zachovávat tento eof znak v prùbìhu celé komprese i dekomprese. Tímto bylo
+dosa¾eno pøibli¾nì dvojnásobného zrychlení. Toto vylep¹ení se zakládá na
+my¹lence z èlánku Marka Nelsona (viz \[[3]]). I pøes toto vylep¹ení
+je komprese velice pomalá a to kvùli quicksortu. Ten dosahuje nejhor¹ích
+výsledkù na datech s vysokým podílem opakujících se úsekù (je nutno
+porovnávat dlouhé bloky). Bohu¾el toto je pøesnì to, co zpùsobuje úspì¹nost
+této transformace a vyskytuje se v bì¾ných datech pomìrnì èasto. Proto byla
+vyzkou¹ena i odli¹ná metoda tøídìní a to suffixový strom. Bohu¾el se
+ukázalo, ¾e èasový zisk není tak vysoký, aby pøevý¹il pamì»ovou nároènost
+(a¾ 40-krát vy¹¹í ne¾ u quicksortu). Zde je srovnání slo¾itostí :
+
+	!	Srovnání slo¾itostí		!
+	!---------------------------------------!
+	!		! qsort		! stree	!
+	!---------------------------------------!
+	! èasová  	! O(N*log(N))	! O(N)	!
+	! pamì»ová	! O(N)		! O(N)	!
+
+To nevypadá tak zle, ale v absolutních èíslech je vidìt nìco jiného :
+stree spotøebuje pøibli¾nì 20 bytù na uzel (v mé implementaci, normálnì je
+to 16 bytù, ale s dodateènými nároky pøi procházení stromu) pøi maximálním
+poètu 2*N uzlù. Implementace se suffixovým stromem je v adresáøi
+bwt__as__stree, ale pozor, na nìkterých datech tøídí ¹patnì a tedy i generuje
+¹patné výstupy.
+
+Dále navazuje Move-to-front kódování implementované fcí do__mtf(buffer, len),
+které se nijak neli¹í od bì¾ných implementací.
+
+Následnì se výstup kóduje pomocí ahc (adaptivního huffmanova kódování),
+pøièem¾ se nejdøíve provede zakódování øetìzcù nul do dvojice (0, délka-1),
+to je víceménì postup navrhovaný v \[[1]]. Øetìzce nul jsou ve výstupu z mtf
+velice èasté, tak¾e se tím dosáhne výrazného zlep¹ení kompresního pomìru,
+pøibli¾nì o ètvrtinu.
+
+** Jednotlivá stádia dekomprese
+
+Komprimovaná data se nejprve pro¾enou dekompresí pomocí ahc, v prùbìhu
+dekomprese se plynule dekódují zakódované øetézce nul.
+
+Poté následuje zpìtné mtf (fce rev__mtf(buffer, len)), na nìm¾ není nic
+zajímavého.
+
+Zpìtná Burrows-Wheelerova transformace je implementována funkcí
+rev__bwt(in__buf, op, out__buf, buf__len, tbuf), která transformuje in__buf do
+out__buf, op je pozice pùvodních dat v setøídìném bufferu a tedy i pozice
+jediného výskytu eof znaku v bufferu. Transformuje se pomocí konstrukce
+transformaèního vektoru v tbuf.
+
+** Rychlost a úspì¹nost metody
+
+Komprese je velice pomalá : oproti programu gzip (který pou¾ívá slovníkovou
+kompresi) nebo programu bzip2 (který pou¾ívá bwt) mù¾e být a¾ 50-krát
+pomalej¹í - zde se projevuje pomalé tøídìní pomocí qsort(), bzip2 pou¾ívá
+také qsort, ale modifikovaný (s vy¹¹í pamì»ovou nároèností). Kompresní pomìr
+je vy¹¹í ne¾ u programu gzip a je porovnatelný s programem bzip2 (hor¹í v
+øádech desetin procenta). Dekomprese je velice rychlá, srovnatelná s
+ostatními programy.
+
+	* \[=[1]=] Roh, ©tìpán : "Burrows-Wheelerova transformace"\\ 
+	               http://www.srnet.cz/~stepan/st/bwt.html
+	* \[=[2]=] Burrows, M. and Wheeler, D.J. (1994) : "A Block-sorting
+	               Lossless Data Compression Algorithm"\\ 
+	               Digital Systems Research Center Research Report 124\\ 
+                       http://gatekeeper.dec.com/pub/DEC/SRC/research-reports/abstracts/src-rr-124.html
+	* \[=[3]=] Nelson, Mark : "Data Compression with the Burrows-Wheeler Transform"\\ 
+	               Dr.Dobbs Journal, September 1996\\ 
+	               http://www.dogma.net/markn/articles/bwt/bwt.htm

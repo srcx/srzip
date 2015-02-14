@@ -1,0 +1,71 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(srzip.c)
+AC_CANONICAL_SYSTEM
+AC_CONFIG_HEADER(config.h)
+
+dnl Disable strict warnings ?
+opt_strictwarn=yes
+AC_ARG_ENABLE(strictwarn,
+  [  --disable-strictwarn    disable strict compiler warnings],
+  test "x$enableval" != "xyes" && opt_strictwarn=no)
+
+dnl Debugging version ?
+opt_debugging=no
+AC_ARG_ENABLE(debugging,
+  [  --enable-debugging      compile with debugging support],
+  test "x$enableval" != "xno" && opt_debugging=yes)
+
+dnl Checks for programs.
+AC_PROG_CC
+SZ_PROG_LD_S
+
+dnl Checks for libraries.
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS(fcntl.h unistd.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_TYPE_SIZE_T
+AC_EXEEXT
+AC_SYS_LONG_FILE_NAMES
+AC_C_INLINE
+AC_C_CONST
+AC_C_BIGENDIAN
+AC_CHECK_TYPE(uchar, unsigned char)
+AC_CHECK_TYPE(ushort, unsigned short)
+AC_CHECK_TYPE(uint, unsigned int)
+AC_CHECK_TYPE(ulong, unsigned long)
+SZ_SYS_EOL
+
+dnl Checks for library functions.
+AC_FUNC_STRFTIME
+AC_CHECK_FUNCS(strdup strstr stricmp strlwr basename strcasecmp)
+
+dnl Final definitions
+CFLAGS=
+LDFLAGS=
+AC_MSG_CHECKING([whether to compile with debugging support])
+if test "x$opt_debugging" = "xyes"; then
+  AC_MSG_RESULT("yes")
+  if test "x$ac_cv_prog_cc_g" = "xyes"; then
+    CFLAGS="$CFLAGS -g"
+  fi
+  CFLAGS="$CFLAGS -DSRZIP_DEBUG"
+else
+  AC_MSG_RESULT("no")
+  CFLAGS="$CFLAGS -O3"
+  if test "x$sz_cv_prog_ld_s" = "xyes"; then
+    LDFLAGS="$LDFLAGS -s"
+  fi
+fi
+AC_MSG_CHECKING([whether to produce strict compiler warnings])
+if test "x$opt_strictwarn" = "xyes"; then
+  AC_MSG_RESULT("yes")
+  CFLAGS="$CFLAGS -Wall -Wno-unused -Werror"
+else
+  AC_MSG_RESULT("no")
+  CFLAGS="$CFLAGS -Wall -Wno-unused"
+fi
+
+AC_OUTPUT(global.h Makefile)

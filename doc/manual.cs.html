@@ -1,0 +1,145 @@
+<!--  manual.cs.aft (c)2000 Stepan Roh - iso-8859-2 encoding -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>srzip 0.3 - Manuál</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-2"/>
+	<meta name="author" content="Štěpán Roh">
+	<meta name="GENERATOR" content = "Almost Free Text v5.095; Copyright 1996-2004 Todd Coram. All rights reserved.">
+</head>
+<body>
+
+<br><center><h1><a name="AFT-top">srzip 0.3 - Manuál</a></h1></center>
+<br><center><h2>Štěpán Roh</h2></center>
+<center>Verze 0.3</center>
+<center>Revize dokumentu 1.1 (15.1.2005)</center>
+<!-- Start SectLevel1 -->
+<h2><a name="Použití">Použití</a></h2>
+<p class="Body">
+Srzip je určen spíše k zábavě než k práci. Představuje poměrně věrnou kopii
+kompresních utilit gzip a bzip2, pouze s poněkud horšími kompresními
+algoritmy.
+</p>
+<p class="Body">
+Srzip bere jednotlivé soubory, které má uvedené na příkazové řádce (nebo
+standardní vstup) a nahrazuje je komprimovanou verzí (není-li řečeno jinak).
+Původní soubory smaže. Je-li spuštěn se jménem srunzip, tak provádí
+dekompresi (v případě srzipu je nutno použít přepínač -d). Je-li spuštěn
+jako srzcat, tak všechny soubory dekomprimuje na standardní výstup a ponechá
+je beze změny.
+</p>
+<p class="Body">
+Komprimované soubory mohou být složeny z vícero částí, slepených bez mezery
+k sobě.
+</p>
+<p class="Body">
+Není-li povoleno brát si jméno původního souboru z hlavičky komprimovaného
+souboru, tak je konstruováno následujícím způsobem: nejdříve se zkusí
+odtrhnout přípona (implicitně .srz nebo ta uvedená přepínačem -S) nebo
+jednopísmennná koncovka 'z' a výsledné jméno se zkrátí v případě, že systém
+nepodporuje dlouhá jména.
+</p>
+<p class="Body">
+Formát spuštění je:
+</p>
+<div class="block"><pre>
+srzip [jména souborů a přepínačů v libovolném pořadí]
+</pre></div>
+<div class="block"><pre>
+ přepínače:
+</pre></div>
+<div class="block"><pre>
+ -a --ascii       konverze konců řádek
+ -c --stdout      zápis na standardní výstup (aktivuje --keep)
+ -d --decompress  dekomprese
+ -f --force       přepisovat výstupní soubory bez ptaní
+ -h --help        nápověda
+ -k --keep        ponechávat původní soubory nedotčeny
+ -l --list        výpis informací o komprimovaných souborech
+ -L --license     &quot;licenční&quot; informace
+ -n --noname      neukládat ani neobnovovat původní jméno ani čas souboru
+ -N --name        ukládat a obnovovat původní jméno a čas souboru
+ -q --quiet       potlačí veškerá varování
+ -S .suf  --suffix .suf      používat příponu .suf při kompresi
+ -t --test        test integrity komprimovaného souboru
+ -v --verbose     více informací o probíhajících dějích
+ -V --version     číslo verze
+ -z --compress    komprese
+ -1 --fast .. -9 --best      úroveň komprese
+ -m m --method m  kompresní metoda (0 = cpy, 1 = rle, 2 = shc, 3 = ahc, 4 = bwt)
+</pre></div>
+<p class="Body">
+Přepínače mohou být jak v krátkém formátu (začínají na '-'), tak v dlouhém
+GNU formátu (začínají na '+') a i v dlouhém POSIX formátu (začínají na
+'--'). Všechny tyto formáty jsou plně podporovány.
+</p>
+<p class="Body">
+A nyní přepínače podrobně:
+</p>
+<dl>
+<dt><strong><tt>-a --ascii</tt></strong></dt><dd> Konvertují se konce řádek při kompresi i dekompresi. Nutné použít u obou, poněvadž při dekompresi se předpokládají Unixové konce řádek.</dd>
+<dt><strong><tt>-c --stdout</tt></strong></dt><dd> Místo aby se vytvářely nějaké soubory, tak veškerý výstup směřuje na standardní výstup. Původní soubory zůstanou nezměněny a veškerý normální výstup je potlačen. Při pokusu o výpis komprimovaného souboru na terminál je další práce odmítnuta, pakliže není použit přepínač -f.</dd>
+<dt><strong><tt>-d --decompress</tt></strong></dt><dd> Dekomprese. Implicitní mód, jmenuje-li se program srunzip (např.  pomocí symbolického linku). Použije-li se i přepínač -v, tak zároveň vypisuje informaci o tom, co dekomprimuje.</dd>
+<dt><strong><tt>-f --force</tt></strong></dt><dd> Výstupní soubory se přepíší bez ptaní. Taktéž je ignorován případný fakt, že komprimovaný soubor směřuje na konzoli.</dd>
+<dt><strong><tt>-h --help</tt></strong></dt><dd> Nápověda.</dd>
+<dt><strong><tt>-k --keep</tt></strong></dt><dd> Původní soubory budou ponechány nedotčeny.</dd>
+<dt><strong><tt>-l --list</tt></strong></dt><dd> Pro každý zkomprimovaný soubor se vypíše původní i nová délka v bytech, kompresní poměr i jméno souboru, jak by vypadalo po dekompresi. Při užití přepínače -v se ještě navíc vypíše jméno kompresní metody, kontrolní součet a čas souboru.</dd>
+<dt><strong><tt>-L --license</tt></strong></dt><dd> &quot;Licenční&quot; informace.</dd>
+<dt><strong><tt>-n --noname</tt></strong></dt><dd> Při kompresi se neukládá jméno ani čas souboru. Při dekompresi se ignoruje jméno i čas uložené v archívu. Implicitně se ignoruje při dekompresi.</dd>
+<dt><strong><tt>-N --name</tt></strong></dt><dd> Při kompresi se ukládá jméno i čas souboru. Při dekompresi se použije jméno i čas uložené v archívu. Implicitně se ukládá při kompresi.</dd>
+<dt><strong><tt>-q --quiet</tt></strong></dt><dd> Potlačí se veškeré varovné hlášky.</dd>
+<dt><strong><tt>-S .suf  --suffix .suf</tt></strong></dt><dd> Místo standardní přípony '.srz' se bude užívat daná přípona.</dd>
+<dt><strong><tt>-t --test</tt></strong></dt><dd> Test integrity archívu pomocí zkusmé dekomprese v paměti.</dd>
+<dt><strong><tt>-v --verbose</tt></strong></dt><dd> Podává se více informací o probíhajících dějích.</dd>
+<dt><strong><tt>-V --version</tt></strong></dt><dd> Verze programu.</dd>
+<dt><strong><tt>-z --compress</tt></strong></dt><dd> Komprese. Implicitní mód, jmenuje-li se program  srzip. Použije-li se i přepínač -v, tak zároveň vypisuje informaci o tom, co se komprimuje.</dd>
+<dt><strong><tt>-1 --fast .. -9 --best</tt></strong></dt><dd> Úroveň komprese. Vyšší číslo = vyšší kvalita, nižší číslo = vyšší rychlost.</dd>
+<dt><strong><tt>-m m --method m</tt></strong></dt><dd> Kompresní metoda. Implicitně je to ta s nejvyšším číslem. Při dekompresi se zjišťuje automaticky. Dostupné metody jsou:</dd>
+<dl>
+<dt><strong>0 = cpy</strong></dt><dd> prostá kopie</dd>
+<dt><strong>1 = rle</strong></dt><dd> run-length encoding (proudové kódování; nejhorší, ale nejrychlejší)</dd>
+<dt><strong>2 = shc</strong></dt><dd> statické huffmanovo kódování</dd>
+<dt><strong>3 = ahc</strong></dt><dd> adaptivní huffmanovo kódování</dd>
+<dt><strong>4 = bwt</strong></dt><dd> Burrows-Wheelerova transformace (ve skutečnosti BWT+MTF+AHC; nejlepší, velice pomalá komprese, lepší než gzip)</dd>
+</dl>
+</dl>
+<!--End Section 1-->
+<h2><a name="Změny mezi verzemi">Změny mezi verzemi</a></h2>
+<p class="Body">
+Změny z verze 0.2 (22.2.2000) na verzi 0.3 (3.5.2000)
+<ul>
+<li> přidána kompresní metoda bwt</li>
+</ul>
+</p>
+<p class="Body">
+Změny z verze 0.1 (28.2.1999) na verzi 0.2 (22.2.2000)
+<ul>
+<li> vylepšen proces konfigurace</li>
+<li> zprovoznění komprimace ze standardního vstupu u DJGPP</li>
+<li> přidána možnost negovat parametr pomocí předpony 'no-' a nejenom 'no'</li>
+<li> vypisuje jména souborů ještě před zahájením komprese při --verbose</li>
+<li> správně vypisuje jméno souboru jaké bude po dekompresi při --list</li>
+<li> při přerušení signálem smaže nedokončený výstupní soubor</li>
+<li> přepsaná metoda rle (a funkční)</li>
+<li> oprava chyb (endiány aj.)</li>
+<li> testované systémy: Linux s glibc2, IRIX 6.4 a SunOS 5.5.1</li>
+<li> s DJGPP nebyly provedeny žádné testy! (pouze srzip 0.1)</li>
+</ul>
+</p>
+<!--End Section 1-->
+<h2><a name="Možná vylepšení do budoucna">Možná vylepšení do budoucna</a></h2>
+<ul>
+<li> Urychlení komprese u metody bwt.</li>
+<li> Komprimované tabulky četností u metody shc.</li>
+<li> Nezávislost na délce slova (co se týče kompilace programu i kompatibility archivů).</li>
+<li> Stavebnicový systém - možnost řetězení jednotlivých metod, čitelnější kód.</li>
+</ul>
+<center>Štěpán Roh &lt;src@post.cz&gt;</center>
+<!--End Section 1-->
+<!-- End SectLevel1 -->
+<hr>
+<br>
+<p align="right"> <small>This document was generated using <a class="link" href="http://www.maplefish.com/todd/aft.html">AFT v5.095</a></small> </p>
+</body>
+</html>
+

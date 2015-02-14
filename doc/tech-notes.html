@@ -1,0 +1,110 @@
+<!--  tech-notes.aft (c)2000 Stepan Roh -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>srzip 0.3 - Implementation notes</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-2"/>
+	<meta name="author" content="Stepan Roh">
+	<meta name="GENERATOR" content = "Almost Free Text v5.095; Copyright 1996-2004 Todd Coram. All rights reserved.">
+</head>
+<body>
+
+<br><center><h1><a name="AFT-top">srzip 0.3 - Implementation notes</a></h1></center>
+<br><center><h2>Stepan Roh</h2></center>
+<center>Version 0.3</center>
+<center>Document revision 1.1 (2005/01/15)</center>
+<!-- Start SectLevel1 -->
+<h2><a name="Method bwt">Method bwt</a></h2>
+<p class="Body">
+Whole code for bwt method is in files m_bwt.[hc] (besides that code of
+method ahc from files m_ahc.[hc] is used). For generic introduction to bwt
+I recommend [<a class="link" href="#1">1</a>].
+</p>
+<!-- Start SectLevel2 -->
+<h3><a name="Individual compression stages">Individual compression stages</a></h3>
+<p class="Body">
+Compression is block-based with block size proportional to compression
+quality. Burrows-Wheeler transformation (see [<a class="link" href="#2">2</a>]) is implemented in
+function do_bwt(in_buf, out_buf, len, idx_buf), which does a
+transformation of input buffer in_buf (of length len) to output buffer
+out_buf. In comparison with basic transformation implementation there are
+these enhancements: ring buffer is not new buffer, bur array of pointers to
+input buffer (idx_buf), for quicker sorting (standard qsort() is used) eof
+character is appended to the input buffer which has higher value than any
+other character, this way it is not necessary to compare ring strings, but
+only input suffixes. It is necessary to retain this eof character during
+whole compression and decompression. This cause double speed gain. This
+enhancement is based on a thought from Mark Nelson's article (see
+[<a class="link" href="#3">3</a>]). Even with this enhancement the compression is very slow and that's
+because of quicksort. It has worst results on data with high ratio of
+repeated sections (it is necessary to compare long blocks). Sadly this is
+exactly the reason for this transformation's success and it is fairly normal
+for common data. For that reason different sorting method was tried and
+that's suffix tree. Sadly the time gain is not too high, but memory
+consumption is (around 40 times higher than quicksort). Complexity
+comparison:
+</p>
+<!-- 3 columns --><table border>
+<caption>&nbsp;&nbsp;Complexity comparison&nbsp;&nbsp;&nbsp;&nbsp;</caption>
+<tr><th>&nbsp;&nbsp;&nbsp;&nbsp;</th><th> qsort&nbsp;&nbsp;&nbsp;&nbsp;</th><th> stree&nbsp;&nbsp;</th></tr>
+<tr><td> time  &nbsp;&nbsp;</td><td> O(N*log(N))&nbsp;&nbsp;</td><td> O(N)&nbsp;&nbsp;</td></tr>
+<tr><td> space&nbsp;&nbsp;&nbsp;&nbsp;</td><td> O(N)&nbsp;&nbsp;&nbsp;&nbsp;</td><td> O(N)&nbsp;&nbsp;</td></tr>
+</table>
+<p class="Body">
+This does not look as bad, but in absolute numbers that's
+different: stree consumes around 20 bytes per node (in my implementation,
+normally it is 16 bytes, but with additional demands during tree walk) with
+max 2*N nodes. Suffix tree implementation is in directory bwt_as_stree,
+but beware that it sorts some data badly and thus generates wrong output.
+</p>
+<p class="Body">
+Then follows Move-to-front coding implemented by function do_mtf(buffer, len),
+which is not differerent from common implementations.
+</p>
+<p class="Body">
+Finally the output is coded by ahc (adaptive huffman coding) whereas at
+first zero strings are coded as pair (0, length-1), that's more or less what
+is suggested in [<a class="link" href="#1">1</a>]. Zero strings are very common in mtf's output so this
+improves compression ratio approximately by quarter.
+</p>
+<!--End Section 2-->
+<h3><a name="Individual decompression stages">Individual decompression stages</a></h3>
+<p class="Body">
+Compressed data are at first decompressed by ahc, coded zero strings are
+decoded on-the-fly.
+</p>
+<p class="Body">
+Then goes reverse mtf (function rev_mtf(buffer, len)), nothing interesting.
+</p>
+<p class="Body">
+Reverse Burrows-Wheeler transformation is implemented by function
+rev_bwt(in_buf, op, out_buf, buf_len, tbuf), which transforms in_buf to
+out_buf, op is original data position in sorted buffer so it's also a
+position of the only appeareance of eof character in the buffer.
+Transformation is done by constructing the transformation vector in tbuf.
+</p>
+<!--End Section 2-->
+<h3><a name="Speed and achievements of the method">Speed and achievements of the method</a></h3>
+<p class="Body">
+Compression is very slow: in comparison to gzip (which uses dictionary-based
+compression) or bzip2 (which uses bwt) it can be almost 50 times slower -
+this shows the slow sorting by qsort(), bzip2 uses qsort too, but modified
+(with higher memory consumption). Compression ratio is higher than gzip's
+and comparable with bzip2's (worse by tenth of percents). Decompression is
+very quick, comparable to other programs.
+</p>
+<ul>
+<li> [<a name="1">1</a>] Roh, Stepan : &quot;Burrows-Wheelerova transformace&quot; (in Czech)<br>  <a class="link" href="http://www.srnet.cz/~stepan/st/bwt.html">http://www.srnet.cz/~stepan/st/bwt.html</a></li>
+<li> [<a name="2">2</a>] Burrows, M. and Wheeler, D.J. (1994) : &quot;A Block-sorting Lossless Data Compression Algorithm&quot;<br>  Digital Systems Research Center Research Report 124<br>  <a class="link" href="http://gatekeeper.dec.com/pub/DEC/SRC/research-reports/abstracts/src-rr-124.html">http://gatekeeper.dec.com/pub/DEC/SRC/research-reports/abstracts/src-rr-124.html</a></li>
+<li> [<a name="3">3</a>] Nelson, Mark : &quot;Data Compression with the Burrows-Wheeler Transform&quot;<br>  Dr.Dobbs Journal, September 1996<br>  <a class="link" href="http://www.dogma.net/markn/articles/bwt/bwt.htm">http://www.dogma.net/markn/articles/bwt/bwt.htm</a></li>
+</ul>
+<!--End Section 2-->
+<!-- End SectLevel2 -->
+<!--End Section 1-->
+<!-- End SectLevel1 -->
+<hr>
+<br>
+<p align="right"> <small>This document was generated using <a class="link" href="http://www.maplefish.com/todd/aft.html">AFT v5.095</a></small> </p>
+</body>
+</html>
+

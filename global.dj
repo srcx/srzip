@@ -1,0 +1,180 @@
+/* srzip (c)1999,2000 Stepan Roh
+ * see license.txt for copying
+ */
+
+/* global.h
+ * globalni definice
+ */
+
+#ifndef __GLOBAL_H
+#define __GLOBAL_H
+
+/* konfiguracni definice */
+#include "config.h"
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <utime.h>
+#include <unistd.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <ctype.h>
+#include <sys/types.h>
+#include <errno.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* def. pro ladeni */
+extern int	debug_flag;	/* 1 = ladeni */
+
+#ifdef SRZIP_DEBUG
+# define ORIG_DBG(x)	((debug_flag) ? (x) : (void)0)
+#else
+# define ORIG_DBG(x)
+#endif
+
+#define DBG(x)		ORIG_DBG(x)
+#define PDBG(x...)	DBG(fprintf (stderr, x))
+
+/* privatni symbol */
+#define PRIVATE	static
+
+/* inline */
+#define INLINE	inline
+
+/* ruzne */
+#define TARGET_NAME             "djgpp"	/* jmeno */
+#define SRZIP_SUFFIX            ".srz"  /* pripona kompr. */
+#define SRZIP_SHORT_SUFFIX      'z'     /* zkracena pripona */
+#define BITS_IN_CHAR		8	/* pocet bitu v ucharu */
+
+/* spec. typ pro CRC 32 kod - 4 byty */
+typedef ulong	crc_t;
+/* spec. typ pro delku souboru - 4 byty */
+typedef ulong	fsize_t;
+
+/* jmeno programu (bez cesty a pripony) */
+extern char	prog_name[32];
+
+/* priznak tichosti */
+extern int	be_quiet;
+
+/* chybove hlaseni */
+#define PANIC(x...)     exit ((fprintf (stderr, "%s: ", prog_name), fprintf (stderr, x), fputc ('\n', stderr), 1))
+/* varovne hlaseni */
+#define WARN(x...)	((void)(be_quiet || (fprintf (stderr, "%s: ", prog_name), fprintf (stderr, x), fputc ('\n', stderr), (errno = 0))))
+/* chybove hlaseni pochazejici z knihoven C */
+#define PERROR(x)	((void)(be_quiet || (fprintf (stderr, "%s: ", prog_name), perror (x), (errno = 0))))
+
+/* chybove kody pro kompresni metody */
+#define M_ERR_OK	0	/* zadna chyba */
+#define M_ERR_OUTPUT	-1	/* vnitrni I/O chyba - obslouzi se pomoci PERROR */
+#define M_ERR_DAMAGE	-2	/* poskozeni vstupniho souboru - nesouhlasi delka apod. - pomoci WARN */
+#define M_ERR_MEM	-3	/* nelze alokovat pamet ci neco na ten zpusob - pomoci PANIC */
+#define M_ERR_OTHER	-4	/* jina chyba - WARN (err_dec/enc) */
+
+/* oddelovace souboru v ceste - nelze pomoci configure */
+#define HAVE_SLASH_DELIM	1	/* '/' - unix standard */
+#ifdef DJGPP
+# define HAVE_BACKSLASH_DELIM	1	/* '\' */
+# define HAVE_COLON_DELIM	1	/* ':' */
+#endif
+
+/* globalni fce */
+int SET_FTIME (char *f, time_t t);
+int GET_FTIME (char *f, time_t *t);
+int IS_CON (FILE *f);
+#define GET_FILENAME(s)	basename(s)
+#define FOPEN_NULL()	fopen ("/dev/null", "wb")
+
+/* pripona spustitelneho souboru */
+#define EXE_EXT		".exe"
+char *  STRIP_EXE_EXT (char *name);
+
+/* dlouhe nazvy */
+#ifdef HAVE_LONG_FILE_NAMES
+# define TRUNC_FILENAME(x)	(0)
+#else
+# define WANT_TRUNC_FILENAME
+# ifndef _USE_LFN
+#   ifdef DJGPP
+#     define _USE_LFN	_use_lfn(NULL)
+#   else
+#     define _USE_LFN	0
+#   endif
+# endif
+  int TRUNC_FILENAME (char *name);
+#endif
+
+/* basename */
+#ifndef HAVE_BASENAME
+# define WANT_BASENAME
+/*  char *basename (char *fname);*/
+#endif
+#if (!((defined DJGPP) && (defined HAVE_BASENAME)))
+  char *basename (char *fname);	/* glibc ma v unistd.h basename vypnute */
+#endif
+
+/* strlwr */
+#ifndef HAVE_STRLWR
+# define WANT_STRLWR
+  char *strlwr (char *s);
+#endif
+
+/* stricmp */
+#ifndef HAVE_STRICMP
+#  ifdef HAVE_STRCASECMP
+#    define stricmp(s1,s2)	strcasecmp(s1,s2)
+#  else
+#    define WANT_STRICMP
+     int stricmp (const char *s1, const char *s2);
+#  endif
+#endif
+
+/* strdup */
+#ifndef HAVE_STRDUP
+# define WANT_STRDUP
+  char *strdup (const char *s);
+#endif
+
+/* prevod bytoveho poradi mezi akt. strojem a host (Intel) - std. v srzip */
+#ifdef WORDS_BIGENDIAN		/* sitovy endian (big) */
+# define MACHINE_TO_HOST_ENDIAN_UL(x)	((((x) & 0xff000000) >> 24) + (((x) & 0x00ff0000) >> 8) + (((x) & 0x0000ff00) << 8) + (((x) & 0x000000ff) << 24))
+# define HOST_TO_MACHINE_ENDIAN_UL(x)	((((x) & 0xff000000) >> 24) + (((x) & 0x00ff0000) >> 8) + (((x) & 0x0000ff00) << 8) + (((x) & 0x000000ff) << 24))
+# define MACHINE_TO_HOST_ENDIAN_US(x)	((((x) & 0xff00) >> 8) + (((x) & 0x00ff) << 8))
+# define HOST_TO_MACHINE_ENDIAN_US(x)	((((x) & 0xff00) >> 8) + (((x) & 0x00ff) << 8))
+#else				/* host endian (Intel) */
+# define MACHINE_TO_HOST_ENDIAN_UL(x)	(x)
+# define HOST_TO_MACHINE_ENDIAN_UL(x)	(x)
+# define MACHINE_TO_HOST_ENDIAN_US(x)	(x)
+# define HOST_TO_MACHINE_ENDIAN_US(x)	(x)
+#endif
+
+/* prevod koncu radku mezi unixem a akt. strojem */
+#if ((EOL_VAL1 == 10) && (EOL_VAL2 == -1))	/* unix */
+# define MACHINE_TO_UNIX_EOL(x,c1,c2)	(*(c1) = (x), 1)
+# define UNIX_TO_MACHINE_EOL(x,c1,c2)	(*(c1) = (x), 1)
+#elif (EOL_VAL2 == -1)	/* 1 hodnota */
+# define MACHINE_TO_UNIX_EOL(x,c1,c2)	(((x) == EOL_VAL1 ? *(c1) = 10 : *(c1) = (x)), 1)
+# define UNIX_TO_MACHINE_EOL(x,c1,c2)	(((x) == 10 ? *(c1) = EOL_VAL1 : *(c1) = (x)), 1)
+# define WANT_SET_BINARY
+#else	/* 2 hodnoty */
+# define MACHINE_TO_UNIX_EOL(x,c1,c2)	((x) == EOL_VAL2) ? 0 : ((((x) == EOL_VAL1) ? *(c1) = 10 : *(c1) = (x)), 1))
+# define UNIX_TO_MACHINE_EOL(x,c1,c2)	(((x) == 10) ? (*(c1) = EOL_VAL1, *(c2) = EOL_VAL2, 2) : (*(c1) = (x), 1))
+# define WANT_SET_BINARY
+#endif
+
+#ifdef WANT_SET_BINARY
+  void SET_BINARY (FILE *f);
+#else
+# define SET_BINARY(x)	((void)0)
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

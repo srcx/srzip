@@ -1,0 +1,59 @@
+/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+
+/* Define to empty if the keyword does not work.  */
+/*#undef const*/
+
+/* Define if you support file names longer than 14 characters.  */
+#define HAVE_LONG_FILE_NAMES
+
+/* Define if you have the strftime function.  */
+#define HAVE_STRFTIME
+
+/* Define as __inline if that's what the C compiler calls it.  */
+/*#undef inline*/
+
+/* Define to `unsigned' if <sys/types.h> doesn't define.  */
+/*#undef size_t*/
+
+/* Define if you have the ANSI C header files.  */
+#define STDC_HEADERS
+
+/* Define if your processor stores words with the most significant
+   byte first (like Motorola and SPARC, unlike Intel and VAX).  */
+/*#undef WORDS_BIGENDIAN*/
+
+/* Define if you have the strcasecmp function.  */
+/*#undef HAVE_STRCASECMP*/
+
+/* Define if you have the basename function.  */
+#if ((DJGPP >= 2) && (DJGPP_MINOR > 1))
+#define HAVE_BASENAME
+#endif
+
+/* Define if you have the strdup function.  */
+#define HAVE_STRDUP
+
+/* Define if you have the stricmp function.  */
+#define HAVE_STRICMP
+
+/* Define if you have the strlwr function.  */
+#define HAVE_STRLWR
+
+/* Define if you have the strstr function.  */
+#define HAVE_STRSTR
+
+/* Define if you have the <fcntl.h> header file.  */
+#define HAVE_FCNTL_H
+
+/* Define if you have the <unistd.h> header file.  */
+#define HAVE_UNISTD_H
+
+/* Type of end-of-line */
+#define EOL_VAL1	13
+#define EOL_VAL2	10
+
+/* Type shortcuts */
+#define uchar	unsigned char
+#define ushort	unsigned short
+#define uint	unsigned int
+#define ulong	unsigned long

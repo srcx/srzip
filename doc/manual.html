@@ -1,0 +1,143 @@
+<!--  manual.aft (c)2000 Stepan Roh -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>srzip 0.3 - Manual</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-2"/>
+	<meta name="author" content="Stepan Roh">
+	<meta name="GENERATOR" content = "Almost Free Text v5.095; Copyright 1996-2004 Todd Coram. All rights reserved.">
+</head>
+<body>
+
+<br><center><h1><a name="AFT-top">srzip 0.3 - Manual</a></h1></center>
+<br><center><h2>Stepan Roh</h2></center>
+<center>Version 0.3</center>
+<center>Document revision 1.1 (2005/01/15)</center>
+<!-- Start SectLevel1 -->
+<h2><a name="Usage">Usage</a></h2>
+<p class="Body">
+Srzip is designated rather for fun than for work. It presents almost
+faithful copy of compression utilities gzip and bzip2, but with a slightly
+worse compression algorithms.
+</p>
+<p class="Body">
+Srzip gets individual files from command line (or standard input) and
+replaces them with compressed version (if not said otherwise). Original
+files are deleted. If it is run as srunzip than it does decompression (in
+case of srzip it is necessary to use switch -d). If it is run as srzcat all
+files are decompressed on standard output and left unchanged.
+</p>
+<p class="Body">
+Compressed files can be composed from more parts joined together without a
+gap.
+</p>
+<p class="Body">
+If it is not permitted to take name of original file from compressed file
+header than it is constructed like this: at first it is tried to rip off the
+extension (default is .srz or specified with switch -S) or one-letter suffix
+'z' and resulting name is shortened if system does not support long names.
+</p>
+<p class="Body">
+Format of execution is:
+</p>
+<div class="block"><pre>
+srzip [file names and switches in arbitrary order]
+</pre></div>
+<div class="block"><pre>
+ switches:
+</pre></div>
+<div class="block"><pre>
+ -a --ascii       end-of-lines conversion
+ -c --stdout      write on standard output (activates --keep)
+ -d --decompress  decompression
+ -f --force       overwrite output files without a question
+ -h --help        help
+ -k --keep        keep original files untouched
+ -l --list        list information about compressed files
+ -L --license     &quot;license&quot; information
+ -n --noname      do not store nor restore original file name or time
+ -N --name        store and restore original file name and time
+ -q --quiet       suppress all warnings
+ -S .suf  --suffix .suf      use extension .suf when compressing
+ -t --test        test compressed file integrity
+ -v --verbose     be more verbose
+ -V --version     version number
+ -z --compress    compression
+ -1 --fast .. -9 --best      compression level
+ -m m --method m  compression method (0 = cpy, 1 = rle, 2 = shc, 3 = ahc, 4 = bwt)
+</pre></div>
+<p class="Body">
+Switches can be in short format (begin with '-'), long GNU format (begin
+with '+') and long POSIX format (begin with '--'). All these format are
+fully supported.
+</p>
+<p class="Body">
+And now switches in deeper detail:
+</p>
+<dl>
+<dt><strong><tt>-a --ascii</tt></strong></dt><dd> End-of-lines are converted during compression and decompression. Must be used in both because on decompression Unix end-of-lines are presumed.</dd>
+<dt><strong><tt>-c --stdout</tt></strong></dt><dd> Instead of creating some files, whole output is redirected to standard output. Original files are left unchanged and all normal output is suppressed. Output to terminal is refused unless switch -f is used.</dd>
+<dt><strong><tt>-d --decompress</tt></strong></dt><dd> Decompression. Implicit mode if program is called srunzip (e.g. symbolic link is used). If switch -v is used, information about what is decompessed is printed.</dd>
+<dt><strong><tt>-f --force</tt></strong></dt><dd> Output files are overwritten without a question. Also the fact that compressed file is decompressed on terminal is ignored.</dd>
+<dt><strong><tt>-h --help</tt></strong></dt><dd> Help.</dd>
+<dt><strong><tt>-k --keep</tt></strong></dt><dd> Original files are left untouched.</dd>
+<dt><strong><tt>-l --list</tt></strong></dt><dd> For each compressed file it prints the original length and new length in bytes, compression ratio and file name for decompression. If switch -v is used the compression method name, control checksum and file time are printed too.</dd>
+<dt><strong><tt>-L --license</tt></strong></dt><dd> &quot;License&quot; information.</dd>
+<dt><strong><tt>-n --noname</tt></strong></dt><dd> No file name nor time is stored at compression. During decompression file name and time stored in the archive are ignored. By default it is ignored at decompression.</dd>
+<dt><strong><tt>-N --name</tt></strong></dt><dd> File name and time are stored at compression. During decompression file name and time stored in the archive are used. By default it is stored at compression.</dd>
+<dt><strong><tt>-q --quiet</tt></strong></dt><dd> All warnings are suppressed.</dd>
+<dt><strong><tt>-S .suf  --suffix .suf</tt></strong></dt><dd> Use given extension instead of standard '.srz'.</dd>
+<dt><strong><tt>-t --test</tt></strong></dt><dd> Test archive integrity by trial in-memory decompression.</dd>
+<dt><strong><tt>-v --verbose</tt></strong></dt><dd> Be more verbose.</dd>
+<dt><strong><tt>-V --version</tt></strong></dt><dd> Program version.</dd>
+<dt><strong><tt>-z --compress</tt></strong></dt><dd> Compression. Default mode of operation if program is called srzip. If switch -v is used, information about what is compressed is printed.</dd>
+<dt><strong><tt>-1 --fast .. -9 --best</tt></strong></dt><dd> Compression level. Higher number = higher quality, lower number = higher speed.</dd>
+<dt><strong><tt>-m m --method m</tt></strong></dt><dd> Compression method. By default it is the one with highest number. Is automatically detected at decompression. Available methods are:</dd>
+<dl>
+<dt><strong>0 = cpy</strong></dt><dd> plain copy</dd>
+<dt><strong>1 = rle</strong></dt><dd> run-length encoding (worst, but quickest)</dd>
+<dt><strong>2 = shc</strong></dt><dd> static huffman coding</dd>
+<dt><strong>3 = ahc</strong></dt><dd> adaptive huffman coding</dd>
+<dt><strong>4 = bwt</strong></dt><dd> Burrows-Wheeler transformation (in fact BWT+MTF+AHC; best, but very slow compression, better than gzip)</dd>
+</dl>
+</dl>
+<!--End Section 1-->
+<h2><a name="Changes between versions">Changes between versions</a></h2>
+<p class="Body">
+Changes from version 0.2 (2000/02/22) to version 0.3 (2000/05/03)
+<ul>
+<li> added compression method bwt</li>
+</ul>
+</p>
+<p class="Body">
+Changes from version 0.1 (1999/02/28) to version 0.2 (2000/02/22)
+<ul>
+<li> better configuration</li>
+<li> fixed compression from standard input for DJGPP</li>
+<li> added ability to negate parameters by prefix 'no-' and not only 'no'</li>
+<li> list file names before start of decompression if --verbose</li>
+<li> correctly show file name for decompression if --list</li>
+<li> partial output file is deleted if signal is catched</li>
+<li> rle rewritten and fixed</li>
+<li> bug fixes (endiannes etc.)</li>
+<li> tested systems: Linux with glibc2, IRIX 6.4 and SunOS 5.5.1</li>
+<li> DJGPP was not tested! (only srzip 0.1)</li>
+</ul>
+</p>
+<!--End Section 1-->
+<h2><a name="Improvements for the future">Improvements for the future</a></h2>
+<ul>
+<li> Faster bwt method compression.</li>
+<li> Compressed frequency tables for method shc.</li>
+<li> Word length independence (for compilation and archives compatibility).</li>
+<li> Brick-box system - availability to chain methods, more readable code.</li>
+</ul>
+<center>Stepan Roh &lt;src@post.cz&gt;</center>
+<!--End Section 1-->
+<!-- End SectLevel1 -->
+<hr>
+<br>
+<p align="right"> <small>This document was generated using <a class="link" href="http://www.maplefish.com/todd/aft.html">AFT v5.095</a></small> </p>
+</body>
+</html>
+

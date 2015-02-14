@@ -1,0 +1,148 @@
+C---- manual.cs.aft (c)2000 Stepan Roh - iso-8859-2 encoding
+*Title: srzip 0.3 - Manuál
+*Author: ©tìpán Roh
+
+                        Verze 0.3
+                        Revize dokumentu 1.1 (15.1.2005)
+
+* Pou¾ití
+
+Srzip je urèen spí¹e k zábavì ne¾ k práci. Pøedstavuje pomìrnì vìrnou kopii
+kompresních utilit gzip a bzip2, pouze s ponìkud hor¹ími kompresními
+algoritmy.
+
+Srzip bere jednotlivé soubory, které má uvedené na pøíkazové øádce (nebo
+standardní vstup) a nahrazuje je komprimovanou verzí (není-li øeèeno jinak).
+Pùvodní soubory sma¾e. Je-li spu¹tìn se jménem srunzip, tak provádí
+dekompresi (v pøípadì srzipu je nutno pou¾ít pøepínaè -d). Je-li spu¹tìn
+jako srzcat, tak v¹echny soubory dekomprimuje na standardní výstup a ponechá
+je beze zmìny.
+
+Komprimované soubory mohou být slo¾eny z vícero èástí, slepených bez mezery
+k sobì.
+
+Není-li povoleno brát si jméno pùvodního souboru z hlavièky komprimovaného
+souboru, tak je konstruováno následujícím zpùsobem: nejdøíve se zkusí
+odtrhnout pøípona (implicitnì .srz nebo ta uvedená pøepínaèem -S) nebo
+jednopísmennná koncovka 'z' a výsledné jméno se zkrátí v pøípadì, ¾e systém
+nepodporuje dlouhá jména.
+
+Formát spu¹tìní je:
+
+	srzip [jména souborù a pøepínaèù v libovolném poøadí]
+
+	 pøepínaèe:
+
+	 -a --ascii       konverze koncù øádek
+	 -c --stdout      zápis na standardní výstup (aktivuje --keep)
+	 -d --decompress  dekomprese
+	 -f --force       pøepisovat výstupní soubory bez ptaní
+	 -h --help        nápovìda
+	 -k --keep        ponechávat pùvodní soubory nedotèeny
+	 -l --list        výpis informací o komprimovaných souborech
+	 -L --license     "licenèní" informace
+	 -n --noname      neukládat ani neobnovovat pùvodní jméno ani èas souboru
+	 -N --name        ukládat a obnovovat pùvodní jméno a èas souboru
+	 -q --quiet       potlaèí ve¹kerá varování
+	 -S .suf  --suffix .suf      pou¾ívat pøíponu .suf pøi kompresi
+	 -t --test        test integrity komprimovaného souboru
+	 -v --verbose     více informací o probíhajících dìjích
+	 -V --version     èíslo verze
+	 -z --compress    komprese
+	 -1 --fast .. -9 --best      úroveò komprese
+	 -m m --method m  kompresní metoda (0 = cpy, 1 = rle, 2 = shc, 3 = ahc, 4 = bwt)
+
+Pøepínaèe mohou být jak v krátkém formátu (zaèínají na '-'), tak v dlouhém
+GNU formátu (zaèínají na '+') a i v dlouhém POSIX formátu (zaèínají na
+'--'). V¹echny tyto formáty jsou plnì podporovány.
+
+A nyní pøepínaèe podrobnì:
+
+	[|-a --ascii|]
+	 Konvertují se konce øádek pøi kompresi i dekompresi. Nutné pou¾ít u
+	 obou, ponìvad¾ pøi dekompresi se pøedpokládají Unixové konce øádek.
+	[|-c --stdout|]
+	 Místo aby se vytváøely nìjaké soubory, tak ve¹kerý výstup smìøuje na
+	 standardní výstup. Pùvodní soubory zùstanou nezmìnìny a ve¹kerý
+	 normální výstup je potlaèen. Pøi pokusu o výpis komprimovaného
+	 souboru na terminál je dal¹í práce odmítnuta, pakli¾e není pou¾it
+	 pøepínaè -f.
+	[|-d --decompress|]
+	 Dekomprese. Implicitní mód, jmenuje-li se program srunzip (napø. 
+         pomocí symbolického linku). Pou¾ije-li se i pøepínaè -v, tak zároveò
+         vypisuje informaci o tom, co dekomprimuje.
+	[|-f --force|]
+	 Výstupní soubory se pøepí¹í bez ptaní. Takté¾ je ignorován pøípadný
+         fakt, ¾e komprimovaný soubor smìøuje na konzoli.
+	[|-h --help|]
+	 Nápovìda.
+	[|-k --keep|]
+	 Pùvodní soubory budou ponechány nedotèeny.
+	[|-l --list|]
+	 Pro ka¾dý zkomprimovaný soubor se vypí¹e pùvodní i nová délka v
+         bytech, kompresní pomìr i jméno souboru, jak by vypadalo po
+         dekompresi. Pøi u¾ití pøepínaèe -v se je¹tì navíc vypí¹e jméno
+         kompresní metody, kontrolní souèet a èas souboru.
+	[|-L --license|]
+	 "Licenèní" informace.
+	[|-n --noname|]
+	 Pøi kompresi se neukládá jméno ani èas souboru. Pøi dekompresi se
+         ignoruje jméno i èas ulo¾ené v archívu. Implicitnì se ignoruje pøi
+         dekompresi.
+	[|-N --name|]
+	 Pøi kompresi se ukládá jméno i èas souboru. Pøi dekompresi se
+         pou¾ije jméno i èas ulo¾ené v archívu. Implicitnì se ukládá pøi
+         kompresi.
+	[|-q --quiet|]
+	 Potlaèí se ve¹keré varovné hlá¹ky.
+	[|-S .suf  --suffix .suf|]
+	 Místo standardní pøípony '.srz' se bude u¾ívat daná pøípona.
+	[|-t --test|]
+	 Test integrity archívu pomocí zkusmé dekomprese v pamìti.
+	[|-v --verbose|]
+	 Podává se více informací o probíhajících dìjích.
+	[|-V --version|]
+	 Verze programu.
+	[|-z --compress|]
+	 Komprese. Implicitní mód, jmenuje-li se program  srzip. Pou¾ije-li
+         se i pøepínaè -v, tak zároveò vypisuje informaci o tom, co se
+         komprimuje.
+	[|-1 --fast .. -9 --best|]
+	 Úroveò komprese. Vy¹¹í èíslo = vy¹¹í kvalita, ni¾¹í èíslo = vy¹¹í
+         rychlost.
+	[|-m m --method m|]
+	Kompresní metoda. Implicitnì je to ta s nejvy¹¹ím èíslem. Pøi
+        dekompresi se zji¹»uje automaticky. Dostupné metody jsou:
+        	[0 = cpy] prostá kopie
+		[1 = rle] run-length encoding (proudové kódování; nejhor¹í, ale nejrychlej¹í)
+		[2 = shc] statické huffmanovo kódování
+		[3 = ahc] adaptivní huffmanovo kódování
+		[4 = bwt] Burrows-Wheelerova transformace (ve skuteènosti BWT+MTF+AHC;
+		          nejlep¹í, velice pomalá komprese, lep¹í ne¾ gzip)
+
+* Zmìny mezi verzemi
+
+Zmìny z verze 0.2 (22.2.2000) na verzi 0.3 (3.5.2000)
+	* pøidána kompresní metoda bwt
+
+Zmìny z verze 0.1 (28.2.1999) na verzi 0.2 (22.2.2000)
+	* vylep¹en proces konfigurace
+	* zprovoznìní komprimace ze standardního vstupu u DJGPP
+	* pøidána mo¾nost negovat parametr pomocí pøedpony 'no-' a nejenom 'no'
+	* vypisuje jména souborù je¹tì pøed zahájením komprese pøi --verbose
+	* správnì vypisuje jméno souboru jaké bude po dekompresi pøi --list
+	* pøi pøeru¹ení signálem sma¾e nedokonèený výstupní soubor
+	* pøepsaná metoda rle (a funkèní)
+	* oprava chyb (endiány aj.)
+	* testované systémy: Linux s glibc2, IRIX 6.4 a SunOS 5.5.1
+	* s DJGPP nebyly provedeny ¾ádné testy! (pouze srzip 0.1)
+
+* Mo¾ná vylep¹ení do budoucna
+
+	* Urychlení komprese u metody bwt.
+	* Komprimované tabulky èetností u metody shc.
+	* Nezávislost na délce slova (co se týèe kompilace programu i kompatibility
+	  archivù).
+	* Stavebnicový systém - mo¾nost øetìzení jednotlivých metod, èitelnìj¹í kód.
+
+				©tìpán Roh <src@post.cz>

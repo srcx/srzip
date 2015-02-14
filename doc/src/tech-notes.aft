@@ -1,0 +1,88 @@
+C---- tech-notes.aft (c)2000 Stepan Roh
+*Title: srzip 0.3 - Implementation notes
+*Author: Stepan Roh
+
+                        Version 0.3
+                        Document revision 1.1 (2005/01/15)
+
+* Method bwt
+
+Whole code for bwt method is in files m__bwt.\[hc] (besides that code of
+method ahc from files m__ahc.\[hc] is used). For generic introduction to bwt
+I recommend \[[1]].
+
+** Individual compression stages
+
+Compression is block-based with block size proportional to compression
+quality. Burrows-Wheeler transformation (see \[[2]]) is implemented in
+function do__bwt(in__buf, out__buf, len, idx__buf), which does a
+transformation of input buffer in__buf (of length len) to output buffer
+out__buf. In comparison with basic transformation implementation there are
+these enhancements: ring buffer is not new buffer, bur array of pointers to
+input buffer (idx__buf), for quicker sorting (standard qsort() is used) eof
+character is appended to the input buffer which has higher value than any
+other character, this way it is not necessary to compare ring strings, but
+only input suffixes. It is necessary to retain this eof character during
+whole compression and decompression. This cause double speed gain. This
+enhancement is based on a thought from Mark Nelson's article (see
+\[[3]]). Even with this enhancement the compression is very slow and that's
+because of quicksort. It has worst results on data with high ratio of
+repeated sections (it is necessary to compare long blocks). Sadly this is
+exactly the reason for this transformation's success and it is fairly normal
+for common data. For that reason different sorting method was tried and
+that's suffix tree. Sadly the time gain is not too high, but memory
+consumption is (around 40 times higher than quicksort). Complexity
+comparison:
+
+	!	Complexity comparison		!
+	!---------------------------------------!
+	!		! qsort		! stree	!
+	!---------------------------------------!
+	! time  	! O(N*log(N))	! O(N)	!
+	! space		! O(N)		! O(N)	!
+
+This does not look as bad, but in absolute numbers that's
+different: stree consumes around 20 bytes per node (in my implementation,
+normally it is 16 bytes, but with additional demands during tree walk) with
+max 2*N nodes. Suffix tree implementation is in directory bwt__as__stree,
+but beware that it sorts some data badly and thus generates wrong output.
+
+Then follows Move-to-front coding implemented by function do__mtf(buffer, len),
+which is not differerent from common implementations.
+
+Finally the output is coded by ahc (adaptive huffman coding) whereas at
+first zero strings are coded as pair (0, length-1), that's more or less what
+is suggested in \[[1]]. Zero strings are very common in mtf's output so this
+improves compression ratio approximately by quarter.
+
+** Individual decompression stages
+
+Compressed data are at first decompressed by ahc, coded zero strings are
+decoded on-the-fly.
+
+Then goes reverse mtf (function rev__mtf(buffer, len)), nothing interesting.
+
+Reverse Burrows-Wheeler transformation is implemented by function
+rev__bwt(in__buf, op, out__buf, buf__len, tbuf), which transforms in__buf to
+out__buf, op is original data position in sorted buffer so it's also a
+position of the only appeareance of eof character in the buffer.
+Transformation is done by constructing the transformation vector in tbuf.
+
+** Speed and achievements of the method
+
+Compression is very slow: in comparison to gzip (which uses dictionary-based
+compression) or bzip2 (which uses bwt) it can be almost 50 times slower -
+this shows the slow sorting by qsort(), bzip2 uses qsort too, but modified
+(with higher memory consumption). Compression ratio is higher than gzip's
+and comparable with bzip2's (worse by tenth of percents). Decompression is
+very quick, comparable to other programs.
+
+	* \[=[1]=] Roh, Stepan : "Burrows-Wheelerova transformace" (in Czech)\\ 
+	               http://www.srnet.cz/~stepan/st/bwt.html
+	* \[=[2]=] Burrows, M. and Wheeler, D.J. (1994) : "A Block-sorting
+	               Lossless Data Compression Algorithm"\\ 
+	               Digital Systems Research Center Research Report 124\\ 
+                       http://gatekeeper.dec.com/pub/DEC/SRC/research-reports/abstracts/src-rr-124.html
+	* \[=[3]=] Nelson, Mark : "Data Compression with the Burrows-Wheeler Transform"\\ 
+	               Dr.Dobbs Journal, September 1996\\ 
+	               http://www.dogma.net/markn/articles/bwt/bwt.htm
