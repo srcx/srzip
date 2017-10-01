@@ -1,5 +1,7 @@
 # srzip
 
+**Warning: unmaintained since 2005!**
+
 Compression program srzip is designated rather for demonstration of simple
 compress algorithms than for real use. Some implementation notes are in file
 doc/tech-notes.html.
